@@ -17,6 +17,7 @@
 
 TFT_eSPI tft = TFT_eSPI();
 Adafruit_MPU6050 mpu;
+bool mpuPresent = false; // Flag to track MPU6050 hardware status
 
 struct Ball {
   float x, y;
@@ -184,8 +185,13 @@ void setup() {
   tft.fillScreen(TFT_BLACK);
 
   Wire.begin(4, 5); // SDA = GPIO4 (D2), SCL = GPIO5 (D1)
+  
+  // Safely check if MPU6050 is connected
   if (mpu.begin()) {
     mpu.setAccelerometerRange(MPU6050_RANGE_2_G);
+    mpuPresent = true;
+  } else {
+    mpuPresent = false; // Fallback to touch-only simulation
   }
 
   randomSeed(analogRead(A0));
@@ -204,31 +210,36 @@ void loop() {
 
   updateAudio(); 
 
-  // 1. Read MPU6050
-  sensors_event_t a, g, temp;
-  mpu.getEvent(&a, &g, &temp);
+  float gravX = 0.0f;
+  float gravY = 0.0f;
 
-  float currentAccX =  a.acceleration.x;
-  float currentAccY = -a.acceleration.y;
+// 1. Read MPU6050 only if sensor was detected in setup()
+  if (mpuPresent) {
+    sensors_event_t a, g, temp;
+    mpu.getEvent(&a, &g, &temp);
 
-  // 2. Calculate Instantaneous Inertial Force (Jerk / Acceleration Delta)
-  // When board moves fast, balls experience an opposite reactive force!
-  float forceX = (currentAccX - prevAccX) * 0.8f; // Scale factor for shake impulse
-  float forceY = (currentAccY - prevAccY) * 0.8f;
+    float currentAccX =  a.acceleration.x;
+    float currentAccY = -a.acceleration.y;
 
-  // Cache current readings for next frame
-  prevAccX = currentAccX;
-  prevAccY = currentAccY;
+    // 2. Calculate Instantaneous Inertial Force (Jerk / Acceleration Delta)
+    // When board moves fast, balls experience an opposite reactive force!
+    float forceX = (currentAccX - prevAccX) * 0.8f; // Scale factor for shake impulse
+    float forceY = (currentAccY - prevAccY) * 0.8f;
 
-  // Apply inertial impulse directly to ball velocities
-  for (int i = 0; i < NUM_BALLS; i++) {
-    balls[i].vx += forceX;
-    balls[i].vy += forceY;
+    // Cache current readings for next frame
+    prevAccX = currentAccX;
+    prevAccY = currentAccY;
+
+    // Apply inertial impulse directly to ball velocities
+    for (int i = 0; i < NUM_BALLS; i++) {
+      balls[i].vx += forceX;
+      balls[i].vy += forceY;
+    }
+
+    // Tilt baseline (Static gravity vector)
+    gravX = currentAccX;
+    gravY = currentAccY;
   }
-
-  // Tilt baseline (Static gravity vector)
-  float gravX = currentAccX;
-  float gravY = currentAccY;
 
   // 3. Read Touch
   uint16_t touchX = 0, touchY = 0;
@@ -263,8 +274,9 @@ void loop() {
 
     if (ballpx != ball_x || ballpy != ball_y) {
       int ball_s = ball_r >> 2;
-      int ball_ox = (int)(-gravX * ball_r) >> 4;
-      int ball_oy = (int)( gravY * ball_r) >> 4;
+      // Default highlight offset if MPU is missing (upper-left light source)
+      int ball_ox = mpuPresent ? (int)(-gravX * ball_r) >> 4 : (ball_r >> 1);
+      int ball_oy = mpuPresent ? (int)( gravY * ball_r) >> 4 : (ball_r >> 1);
 
       // 1. Clear old ball position immediately before drawing new one
       tft.fillCircle(ballpx, ballpy, ballpr, TFT_BLACK);
@@ -283,9 +295,9 @@ void loop() {
         int minDist = (int)balls[j].radius + ballpr;
 
         if (distSq <= minDist * minDist) {
-          int ox = (int)(-gravX * balls[j].radius) >> 4;
-          int oy = (int)( gravY * balls[j].radius) >> 4;
           int rd = (int)balls[j].radius;
+          int ox = mpuPresent ? (int)(-gravX * rd) >> 4 : (rd >> 1);
+          int oy = mpuPresent ? (int)( gravY * rd) >> 4 : (rd >> 1);
           int sj = rd >> 2 ;
           tft.fillCircle((int)balls[j].x, (int)balls[j].y, rd, balls[j].color);
           if ( ( ox * ox ) + ( oy * oy )  < ( rd - sj ) * ( rd - sj ) )
