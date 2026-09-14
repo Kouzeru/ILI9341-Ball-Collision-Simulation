@@ -2,7 +2,7 @@
 
 An interactive, real-time 2D rigid-body physics simulation running on an **ESP8266** paired with an **ILI9341 320x240 TFT display**, **XPT2046 touch controller**, optional **MPU6050 6-axis gyro/accelerometer**, and a **passive buzzer**.
 
-Featuring dynamic 100 Hz sub-stepped physics, inertia-driven physical shake forces, procedural collision sound generation, interactive touch repulsion ("whitehole"), and flicker-free rendering.
+Featuring dynamic 150 Hz sub-stepped physics, inertia-driven physical shake forces, procedural collision sound generation, interactive touch repulsion ("whitehole"), and flicker-free rendering.
 
 ---
 
@@ -11,24 +11,21 @@ https://github.com/user-attachments/assets/60248dfc-e520-4b15-b68d-00b018578d82
 ## 🌟 Key Features
 
 * **150 Hz Sub-Stepped Physics Engine**: Physics updates run at 150 Hz (6.66 ms sub-steps) while display rendering is locked to 50 FPS (20 ms), delivering buttery-smooth elastic collisions and zero tunneling without overloading SPI transfers.
-* **Automatic Hardware Detection (MPU6050 Fallback)**: Automatically detects whether the MPU6050 sensor is present at boot. If missing or disconnected, the project gracefully falls back to a touch-driven simulation with static top-left lighting reflections.
+* **Optimized Interleaved Rendering**: Clears and redraws individual balls sequentially with instant neighbor overlap repairs (`j < i`), reducing whole-screen flickering while eliminating black visual artifacts.
+* **Mass & Elastic Collisions**: Ball sizes are generated randomly with mass proportional to area ($m \propto r^2$). Collisions conserve momentum and kinetic energy with customizable restitution and drag.
+* **Touch Interaction ("Whitehole")**: Touching the screen spawns a multi-layered force field that repels nearby balls.
 
 https://github.com/user-attachments/assets/4478dcaa-e4b1-4717-98e4-67dd57fa7013
   
-* **Mass & Elastic Collisions**: Ball sizes are generated randomly with mass proportional to area ($m \propto r^2$). Collisions conserve momentum and kinetic energy with customizable restitution and drag.
-* **MPU6050 Accelerometer Gravity & Inertia**:
+## **MPU6050 Accelerometer Gravity & Inertia**:
 * **Tilt Gravity**: Rolling direction tracks physical board tilt smoothly.
 * **Physical Inertial Force**: Sudden shakes, jerks, and stops calculate frame-to-frame acceleration deltas ($\Delta A$), transferring real force to the balls (they lag behind and slam forward on sudden stops).
 * **Dynamic Highlight Shifting**: Specular light highlights shift position based on real-time gravity vectors with geometry bounds checking to keep reflections inside ball perimeters.
-
-
-* **Touch Interaction ("Whitehole")**: Touching the screen spawns a multi-layered force field that repels nearby balls.
-* **Procedural Collision Audio**:
+* **Automatic Hardware Detection (MPU6050 Fallback)**: Automatically detects whether the MPU6050 sensor is present at boot. If missing or disconnected, the project gracefully falls back to a touch-driven simulation with static top-left lighting reflections.
+  
+## **Procedural Collision Audio**:
 * Sound pitch scales inversely with ball size (smaller balls produce high-frequency clinks, large balls create low-pitched thumps).
 * Sound duration is calculated using **relative positional displacement deltas ($\Delta p$)** rather than raw velocity spikes, preventing piezo hum/lockup during heavy ball compression.
-
-
-* **Optimized Interleaved Rendering**: Clears and redraws individual balls sequentially with instant neighbor overlap repairs (`j < i`), eliminating whole-screen flickering while preventing black visual artifacts.
 
 ---
 
