@@ -1,6 +1,6 @@
 # 🏀 ESP8266 Interactive 2D Physics Ball Simulation
 
-An interactive, real-time 2D rigid-body physics simulation running on an **ESP8266** paired with an **ILI9341 320x240 TFT display**, **XPT2046 touch controller**, **MPU6050 6-axis gyro/accelerometer**, and a **passive buzzer**.
+An interactive, real-time 2D rigid-body physics simulation running on an **ESP8266** paired with an **ILI9341 320x240 TFT display**, **XPT2046 touch controller**, optional **MPU6050 6-axis gyro/accelerometer**, and a **passive buzzer**.
 
 Featuring dynamic 100 Hz sub-stepped physics, inertia-driven physical shake forces, procedural collision sound generation, interactive touch repulsion ("whitehole"), and flicker-free rendering.
 
@@ -11,6 +11,7 @@ https://github.com/user-attachments/assets/60248dfc-e520-4b15-b68d-00b018578d82
 ## 🌟 Key Features
 
 * **150 Hz Sub-Stepped Physics Engine**: Physics updates run at 150 Hz (6.66 ms sub-steps) while display rendering is locked to 50 FPS (20 ms), delivering buttery-smooth elastic collisions and zero tunneling without overloading SPI transfers.
+* **Automatic Hardware Detection (MPU6050 Fallback)**: Automatically detects whether the MPU6050 sensor is present at boot. If missing or disconnected, the project gracefully falls back to a touch-driven simulation with static top-left lighting reflections.
 * **Mass & Elastic Collisions**: Ball sizes are generated randomly with mass proportional to area ($m \propto r^2$). Collisions conserve momentum and kinetic energy with customizable restitution and drag.
 * **MPU6050 Accelerometer Gravity & Inertia**:
 * **Tilt Gravity**: Rolling direction tracks physical board tilt smoothly.
@@ -35,7 +36,7 @@ https://github.com/user-attachments/assets/60248dfc-e520-4b15-b68d-00b018578d82
 | **Microcontroller** | ESP8266 (NodeMCU V3 / Wemos D1 Mini / ESP-12F) |
 | **Display Module** | 2.8" or 2.4" SPI TFT (ILI9341, 320x240 resolution) |
 | **Touch Controller** | Integrated SPI Touch (XPT2046) |
-| **IMU Sensor** | MPU6050 6-Axis Gyroscope / Accelerometer (GY-521) |
+| **IMU Sensor** (optional) | MPU6050 6-Axis Gyroscope / Accelerometer (GY-521) |
 | **Audio Output** | 5V / 3.3V Passive Buzzer Module |
 
 ---
