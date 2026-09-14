@@ -6,6 +6,8 @@ Featuring dynamic 100 Hz sub-stepped physics, inertia-driven physical shake forc
 
 ---
 
+https://github.com/user-attachments/assets/60248dfc-e520-4b15-b68d-00b018578d82
+
 ## 🌟 Key Features
 
 * **150 Hz Sub-Stepped Physics Engine**: Physics updates run at 150 Hz (6.66 ms sub-steps) while display rendering is locked to 50 FPS (20 ms), delivering buttery-smooth elastic collisions and zero tunneling without overloading SPI transfers.
